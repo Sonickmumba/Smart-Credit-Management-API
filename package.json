@@ -1,0 +1,25 @@
+{
+  "name": "smart-credit-management-api",
+  "version": "1.0.0",
+  "description": "<a name=\"readme-top\"></a>",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sonickmumba/Smart-Credit-Management-API.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Sonickmumba/Smart-Credit-Management-API/issues"
+  },
+  "homepage": "https://github.com/Sonickmumba/Smart-Credit-Management-API#readme",
+  "dependencies": {
+    "body-parser": "^1.20.2",
+    "express": "^4.19.2",
+    "pg": "^8.12.0"
+  }
+}
