@@ -4,5 +4,7 @@ const loanController = require('../controllers/loanController');
 
 const router = express.Router();
 
+router.post('/process', loanController.processLoanApplication);
 
-router.post('/process', loanController);
+
+module.exports = router;
