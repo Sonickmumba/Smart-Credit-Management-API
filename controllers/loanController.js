@@ -29,7 +29,7 @@ const processLoanApplication = async (req, res) => {
       );
       res.status(201).json({ Success: true, message: "New borrower added" });
     } else {
-      const remainingCreditLimit = results.rows[0].credit_limit - loanAmount;
+      const remainingCreditLimit = results.rows[0].credit_limit - results.rows[0].used_amount;
 
       const unpaidLoans = await pool.query(
         "SELECT * FROM loan WHERE borrower_id = $1 AND repayment_date < NOW() AND payment_status = 'unpaid'",
@@ -50,8 +50,10 @@ const processLoanApplication = async (req, res) => {
           message: "Loan amount exceeds the remaining credit limit.",
           Success: false,
         });
-      } else {
-        const loanDate = new Date();
+      }
+
+
+      const loanDate = new Date();
         const repaymentDate = new Date(loanDate);
         repaymentDate.setMonth(repaymentDate.getMonth() + 1); // Set repayment date to next month
         const paymentStatus = "Not paid";
@@ -69,7 +71,7 @@ const processLoanApplication = async (req, res) => {
           ]
         );
         await pool.query(
-          "UPDATE credit_limit SET used_amount = $1 WHERE borrower_id = $2 RETURNING *",
+          "UPDATE credit_limit SET used_amount = used_amount + $1 WHERE borrower_id = $2 RETURNING *",
           [loanAmount, borrowerId]
         );
 
@@ -93,7 +95,8 @@ const processLoanApplication = async (req, res) => {
         );
 
         return res.status(200).json(newPaymentTransaction.rows[0])
-      }
+      
+        
     }
 
   } catch (error) {
