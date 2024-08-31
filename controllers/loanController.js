@@ -74,7 +74,6 @@ const processLoanApplication = async (req, res) => {
       }
     }
   } catch (error) {
-    console.error("Error processing loan application:", error);
     res
       .status(500)
       .json({
