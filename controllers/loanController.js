@@ -1,6 +1,7 @@
 const pool = require("../models/database");
 
 const processLoanApplication =  (req, res) => {
+    console.log(req.body);
     const { borrowedId, loanAmount } = req.body;
     if(!borrowedId || borrowedId === '') {
         res.status(400).json({Success: false, message: 'Invalid or Missing input'});
