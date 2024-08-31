@@ -37,19 +37,19 @@ const processLoanApplication = async (req, res) => {
       if (unpaidLoans.rows.length > 0) {
         return res
           .status(400)
-          .json({ Success: false, message: "Loan application rejectd" });
+          .json({ message: "There are existing unpaid loans with crossed repayment dates.", Success: false });
       }
       if (loanAmount > remainingCreditLimit) {
         return res.status(400).json({
-          Success: false,
           message:
-            "Loan application rejected due to insufficient credit limit.",
+            "Loan amount exceeds the remaining credit limit.",
+            Success: false
         });
       } else {
         const loanDate = new Date();
         const repaymentDate = new Date(loanDate);
         repaymentDate.setMonth(repaymentDate.getMonth() + 1); // Set repayment date to next month
-        const paymentStatus = "Not paid";
+        const paymentStatus = 'Not paid';
         const paidDate = null;
 
         await pool.query(
