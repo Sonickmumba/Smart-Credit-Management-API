@@ -34,23 +34,26 @@ const processLoanApplication = async (req, res) => {
         "SELECT * FROM loan WHERE borrower_id = $1 AND repayment_date < NOW() AND payment_status = 'unpaid'",
         [borrowerId]
       );
-      
+
       if (unpaidLoans.rows.length > 0) {
         return res
           .status(400)
-          .json({ message: "There are existing unpaid loans with crossed repayment dates.", Success: false });
+          .json({
+            message:
+              "There are existing unpaid loans with crossed repayment dates.",
+            Success: false,
+          });
       }
       if (loanAmount > remainingCreditLimit) {
         return res.status(400).json({
-          message:
-            "Loan amount exceeds the remaining credit limit.",
-            Success: false
+          message: "Loan amount exceeds the remaining credit limit.",
+          Success: false,
         });
       } else {
         const loanDate = new Date();
         const repaymentDate = new Date(loanDate);
         repaymentDate.setMonth(repaymentDate.getMonth() + 1); // Set repayment date to next month
-        const paymentStatus = 'Not paid';
+        const paymentStatus = "Not paid";
         const paidDate = null;
 
         await pool.query(
@@ -69,18 +72,32 @@ const processLoanApplication = async (req, res) => {
           [loanAmount, borrowerId]
         );
 
-        return res
-          .status(201)
-          .json({ Success: true, message: "Loan application approved" });
+        // return res
+        //   .status(201)
+        //   .json({ Success: true, message: "Loan application approved" });
+
+        const newPaymentTransaction = await pool.query(
+          "SELECT * FROM loan WHERE borrower_id = $1",
+          [borrowerId]
+        );
+        console.log(newPaymentTransaction.rows[0]);
+        const loanId = newPaymentTransaction.rows[0].id;
+        const penaltAmount = 0.0;
+        const totalAmount = penaltAmount + loanAmount;
+        // repaymentDate = newPaymentTransaction.rows[0].repayment_date;
+        const paidOnDate = null;
+        const paymentStatus = await pool.query(
+          "INSERT INTO payment_transation (loan_id, penalty_amount, total_amount, repayment_date, paid_on_date, payment_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+          [loanId, penaltAmount, totalAmount, repaymentDate]
+        );
       }
     }
-    console.log('snick Mumba');
+    // const newPaymentTransaction = await pool.query('SELECT * FROM loan WHERE borrower_id = $1', [borrowerId]);
+    // console.log(newPaymentTransaction.rows);
   } catch (error) {
-    res
-      .status(500)
-      .json({
-        message: "An error occurred while processing the loan application",
-      });
+    res.status(500).json({
+      message: "An error occurred while processing the loan application",
+    });
   }
 };
 exports.viewAllLoans = () => {};
