@@ -19,6 +19,7 @@
   "homepage": "https://github.com/Sonickmumba/Smart-Credit-Management-API#readme",
   "dependencies": {
     "body-parser": "^1.20.2",
+    "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "pg": "^8.12.0"
   }
