@@ -3,6 +3,8 @@ require("dotenv").config();
 
 const bodyParser = require('body-parser');
 
+const loanProcessRoute = require('./routes/loanProcessRoute');
+
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -17,6 +19,8 @@ app.get("/", (req, res) => {
     info: "Node.js, Express, and Postgres API Template by Sonick",
   });
 });
+
+app.use('/loan', loanProcessRoute);
 
 app.listen(port, () => {
   console.log(`App running on port ${port}`);
