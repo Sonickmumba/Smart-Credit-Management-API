@@ -1,31 +1,86 @@
 const pool = require("../models/database");
 
-const processLoanApplication =  (req, res) => {
-    console.log(req.body);
-    const { borrowedId, loanAmount } = req.body;
-    if(!borrowedId || borrowedId === '') {
-        res.status(400).json({Success: false, message: 'Invalid or Missing input'});
-    }
-    if (loanAmount === undefined || loanAmount <= 0 ){
-        res.status(400).json({Success: false, message: 'Invalid or Missing input'});
-    }
-    try {
-        const row = pool.query('SELECT * FROM credit_limit WHERE borrowed_id = ?', [borrowedId]);
+const processLoanApplication = async (req, res) => {
+  // console.log(req.body);
+  const { borrowerId, loanAmount } = req.body;
+  if (!borrowerId || borrowerId === "") {
+    res
+      .status(400)
+      .json({ Success: false, message: "Invalid or Missing input" });
+  }
+  if (loanAmount === undefined || loanAmount <= 0) {
+    res
+      .status(400)
+      .json({ Success: false, message: "Invalid or Missing input" });
+  }
+  try {
+    const results = await pool.query(
+      "SELECT * FROM credit_limit WHERE borrower_id = $1",
+      [borrowerId]
+    );
 
-        if (row.length === 0) {
-            const baseCreditLimit = 5000.0;
-            pool.query('INSERT INTO credit_limit (borrowed_id, credit_limit) VALUES ($1, $2) RETURNING id', [borrowedId, baseCreditLimit]);
-            res.status(400).json({ Success: true, message: 'New borrower added' })
-        } else {
-            const results = pool.query('SELECT * FROM credit_limit WHERE borrowed_id = ?', [borrowedId]);
-            const remainingCreditLimit = results[0].credit_limit - loanAmount;
-            if (loanAmount < results[0].credit_limit)
-            res.status(200).json({ Success: true, credit_limit: results[0].credit_limit });
-        }
-    } catch (error) {
-        
+    if (results.rows.length === 0) {
+      const baseCreditLimit = 5000.0;
+      await pool.query(
+        "INSERT INTO credit_limit (borrower_id, credit_limit) VALUES ($1, $2) RETURNING id",
+        [borrowerId, baseCreditLimit]
+      );
+      res.status(201).json({ Success: true, message: "New borrower added" });
+    } else {
+      const remainingCreditLimit = results.rows[0].credit_limit - loanAmount;
+
+      const unpaidLoans = await pool.query(
+        "SELECT * FROM loan WHERE borrower_id = $1 AND repayment_date < NOW() AND payment_status = 'unpaid'",
+        [borrowerId]
+      );
+      
+      if (unpaidLoans.rows.length > 0) {
+        return res
+          .status(400)
+          .json({ Success: false, message: "Loan application rejectd" });
+      }
+      if (loanAmount > remainingCreditLimit) {
+        return res.status(400).json({
+          Success: false,
+          message:
+            "Loan application rejected due to insufficient credit limit.",
+        });
+      } else {
+        const loanDate = new Date();
+        const repaymentDate = new Date(loanDate);
+        repaymentDate.setMonth(repaymentDate.getMonth() + 1); // Set repayment date to next month
+        const paymentStatus = "Not paid";
+        const paidDate = null;
+
+        await pool.query(
+          "INSERT INTO loan (borrower_id, loan_amount, loan_date, paid_date, payment_status, repayment_date) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+          [
+            borrowerId,
+            loanAmount,
+            loanDate,
+            paidDate,
+            paymentStatus,
+            repaymentDate,
+          ]
+        );
+        await pool.query(
+          "UPDATE credit_limit SET used_amount = $1 WHERE borrower_id = $2 RETURNING *",
+          [loanAmount, borrowerId]
+        );
+
+        return res
+          .status(201)
+          .json({ Success: true, message: "Loan application approved" });
+      }
     }
-    
+  } catch (error) {
+    console.error("Error processing loan application:", error);
+    res
+      .status(500)
+      .json({
+        message: "An error occurred while processing the loan application",
+      });
+  }
 };
 exports.viewAllLoans = () => {};
 exports.viewLoanById = () => {};
@@ -34,7 +89,6 @@ exports.viewCreditLimitByBorrowerId = () => {};
 exports.getPaymentDetails = () => {};
 exports.repayLoan = () => {};
 
-
 module.exports = {
   processLoanApplication,
-}
+};
