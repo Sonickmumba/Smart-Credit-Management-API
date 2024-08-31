@@ -1,6 +1,6 @@
 const pool = require("../models/database");
 
-exports.processLoanApplication =  (req, res) => {
+const processLoanApplication =  (req, res) => {
     const { borrowedId, loanAmount } = req.body;
     if(!borrowedId || borrowedId === '') {
         res.status(400).json({Success: false, message: 'Invalid or Missing input'});
@@ -24,7 +24,6 @@ exports.processLoanApplication =  (req, res) => {
     } catch (error) {
         
     }
-
     
 };
 exports.viewAllLoans = () => {};
@@ -33,3 +32,8 @@ exports.viewLoansByBorrowerId = () => {};
 exports.viewCreditLimitByBorrowerId = () => {};
 exports.getPaymentDetails = () => {};
 exports.repayLoan = () => {};
+
+
+module.exports = {
+  processLoanApplication,
+}
