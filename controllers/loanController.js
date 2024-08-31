@@ -14,6 +14,7 @@ const processLoanApplication = async (req, res) => {
       .status(400)
       .json({ Success: false, message: "Invalid or Missing input" });
   }
+
   try {
     const results = await pool.query(
       "SELECT * FROM credit_limit WHERE borrower_id = $1",
@@ -80,20 +81,21 @@ const processLoanApplication = async (req, res) => {
           "SELECT * FROM loan WHERE borrower_id = $1",
           [borrowerId]
         );
-        console.log(newPaymentTransaction.rows[0]);
+
         const loanId = newPaymentTransaction.rows[0].id;
-        const penaltAmount = 0.0;
-        const totalAmount = penaltAmount + loanAmount;
-        // repaymentDate = newPaymentTransaction.rows[0].repayment_date;
+        const penaltyAmount = 0.0;
+        const totalAmount = penaltyAmount + loanAmount;
         const paidOnDate = null;
-        const paymentStatus = await pool.query(
-          "INSERT INTO payment_transation (loan_id, penalty_amount, total_amount, repayment_date, paid_on_date, payment_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
-          [loanId, penaltAmount, totalAmount, repaymentDate]
+
+        await pool.query(
+          'INSERT INTO payment_transaction (loan_id, penalty_amount, total_amount, repayment_date, paid_on_date, payment_status) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+          [loanId, penaltyAmount, totalAmount, repaymentDate, paidOnDate, paymentStatus]
         );
+
+        return res.status(200).json(newPaymentTransaction.rows[0])
       }
     }
-    // const newPaymentTransaction = await pool.query('SELECT * FROM loan WHERE borrower_id = $1', [borrowerId]);
-    // console.log(newPaymentTransaction.rows);
+
   } catch (error) {
     res.status(500).json({
       message: "An error occurred while processing the loan application",
