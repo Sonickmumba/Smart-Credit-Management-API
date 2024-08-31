@@ -3,13 +3,14 @@ const pool = require("../models/database");
 const processLoanApplication = async (req, res) => {
   // console.log(req.body);
   const { borrowerId, loanAmount } = req.body;
+
   if (!borrowerId || borrowerId === "") {
-    res
+    return res
       .status(400)
       .json({ Success: false, message: "Invalid or Missing input" });
   }
   if (loanAmount === undefined || loanAmount <= 0) {
-    res
+    return res
       .status(400)
       .json({ Success: false, message: "Invalid or Missing input" });
   }
@@ -73,6 +74,7 @@ const processLoanApplication = async (req, res) => {
           .json({ Success: true, message: "Loan application approved" });
       }
     }
+    console.log('snick Mumba');
   } catch (error) {
     res
       .status(500)
