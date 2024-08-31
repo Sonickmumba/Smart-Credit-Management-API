@@ -75,11 +75,6 @@ const processLoanApplication = async (req, res) => {
         [loanAmount, borrowerId]
       );
 
-      // const newPaymentTransaction = await pool.query(
-      //   "SELECT * FROM loan WHERE borrower_id = $1",
-      //   [borrowerId]
-      // );
-
       const loanId = loanInsert.rows[0].id;
       const penaltyAmount = 0.0;
       const totalAmount = penaltyAmount + loanAmount;
