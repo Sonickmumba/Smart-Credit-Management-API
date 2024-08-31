@@ -70,7 +70,7 @@ const processLoanApplication = async (req, res) => {
       );
       console.log(loanInsert.rows);
       await pool.query(
-        "UPDATE credit_limit SET used_amount = used_amount + $1 WHERE borrower_id = $2 RETURNING *",
+        "UPDATE credit_limit SET used_amount = used_amount + $1, remaining_amount = credit_limit - used_amount - $1 WHERE borrower_id = $2 RETURNING *",
         [loanAmount, borrowerId]
       );
 
