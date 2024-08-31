@@ -75,10 +75,6 @@ const processLoanApplication = async (req, res) => {
           [loanAmount, borrowerId]
         );
 
-        // return res
-        //   .status(201)
-        //   .json({ Success: true, message: "Loan application approved" });
-
         const newPaymentTransaction = await pool.query(
           "SELECT * FROM loan WHERE borrower_id = $1",
           [borrowerId]
