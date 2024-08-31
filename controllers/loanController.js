@@ -1,4 +1,4 @@
-const pool = require("../db");
+const pool = require("../models/database");
 
 exports.processLoanApplication =  (req, res) => {
     const { borrowedId, loanAmount } = req.body;
