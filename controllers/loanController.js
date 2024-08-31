@@ -1,7 +1,6 @@
 const pool = require("../models/database");
 
 const processLoanApplication = async (req, res) => {
-  // console.log(req.body);
   const { borrowerId, loanAmount } = req.body;
 
   if (!borrowerId || borrowerId === "") {
