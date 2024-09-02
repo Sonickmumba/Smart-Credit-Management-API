@@ -32,7 +32,7 @@ const processLoanApplication = async (req, res) => {
         results.rows[0].credit_limit - results.rows[0].used_amount;
 
       const unpaidLoans = await pool.query(
-        "SELECT * FROM loan WHERE borrower_id = $1 AND repayment_date < NOW() AND payment_status = 'unpaid'",
+        "SELECT * FROM loan WHERE borrower_id = $1 AND repayment_date < NOW() AND payment_status = 'Not Paid'",
         [borrowerId]
       );
 
