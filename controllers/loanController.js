@@ -129,10 +129,11 @@ const viewAllLoans = async (req, res) => {
 
 
 const viewLoanById = async (req, res) => {
-  const id = parseInt(req.params.id, 10);
+  const loanId = parseInt(req.params.loanId, 10);
+  console.log(loanId);
 
   try {
-    const loanById = await pool.query('SELECT * FROM loan WHERE id = $1', [id]);
+    const loanById = await pool.query('SELECT * FROM loan WHERE id = $1', [loanId]);
     if (!loanById) {
       return res.status(404).json({
         success: false,
@@ -141,7 +142,10 @@ const viewLoanById = async (req, res) => {
     }
     return res.status(200).json({ success: true, data: loanById.rows[0]})
   } catch (error) {
-    
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    })
   }
 };
 
