@@ -10,17 +10,6 @@ const processLoanApplication = async (req, res) => {
       .json({ success: false, message: "Invalid or Missing input" });
   }
 
-  // if (!borrowerId || borrowerId === "") {
-  //   return res
-  //     .status(400)
-  //     .json({ Success: false, message: "Invalid or Missing input" });
-  // }
-  // if (loanAmount === undefined || loanAmount <= 0) {
-  //   return res
-  //     .status(400)
-  //     .json({ Success: false, message: "Invalid or Missing input" });
-  // }
-
   try {
 
     // Begin transaction
