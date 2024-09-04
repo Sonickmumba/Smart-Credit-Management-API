@@ -101,7 +101,8 @@ const processLoanApplication = async (req, res) => {
     return res.status(200).json(loanInsert.rows[0]);
   } catch (error) {
     res.status(500).json({
-      message: "An error occurred while processing the loan application",
+      success: false,
+      message: "An error occurred while processing the loan application"
     });
   }
 };
