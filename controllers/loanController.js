@@ -107,7 +107,7 @@ const processLoanApplication = async (req, res) => {
 const viewAllLoans = async (req, res) => {
 
   try {
-    const allLoans = await pool.query('SELECT * FROM loans');
+    const allLoans = await pool.query('SELECT * FROM loan');
 
     if (allLoans.rows.length === 0) {
       res.status(400).json({
@@ -119,7 +119,7 @@ const viewAllLoans = async (req, res) => {
     console.log(allLoans.rows)
     
   } catch (error) {
-    
+    return error;
   }
 };
 
