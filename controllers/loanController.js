@@ -128,7 +128,22 @@ const viewAllLoans = async (req, res) => {
 };
 
 
-const viewLoanById = () => {};
+const viewLoanById = async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+
+  try {
+    const loanById = await pool.query('SELECT * FROM loan WHERE id = $1', [id]);
+    if (!loanById) {
+      return res.status(404).json({
+        success: false,
+        message: 'Loan not foumd with provided ID'
+      })
+    }
+    return res.status(200).json({ success: true, data: loanById.rows[0]})
+  } catch (error) {
+    
+  }
+};
 
 exports.viewLoansByBorrowerId = () => {};
 exports.viewCreditLimitByBorrowerId = () => {};
