@@ -181,7 +181,30 @@ const viewLoansByBorrowerId = async (req, res) => {
 };
 
 
-exports.viewCreditLimitByBorrowerId = () => {};
+const viewCreditLimitByBorrowerId = async (req, res) => {
+  const borrowerId = req.params.borrowerId;
+
+  try {
+    const creditLimit = await pool.query('SELECT * FROM credit_limit WHERE borrower_id = $1', [borrowerId]);
+    
+    if (creditLimit.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: `No credit limit data found for borrower ID: ${borrowerId}`
+      })
+    }
+    return res.status(200).json({
+      success: true,
+      data: creditLimit.rows
+    })
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    })
+  }
+};
+
 exports.getPaymentDetails = () => {};
 exports.repayLoan = () => {};
 
@@ -190,4 +213,5 @@ module.exports = {
   viewAllLoans,
   viewLoanById,
   viewLoansByBorrowerId,
+  viewCreditLimitByBorrowerId,
 };
