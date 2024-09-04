@@ -20,7 +20,7 @@ app.get("/", (req, res) => {
   });
 });
 
-app.use('/loan', loanProcessRoute);
+app.use('/loans', loanProcessRoute);
 
 app.listen(port, () => {
   console.log(`App running on port ${port}`);
