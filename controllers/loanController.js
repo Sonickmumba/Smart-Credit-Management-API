@@ -53,7 +53,7 @@ const processLoanApplication = async (req, res) => {
 
       const loanDate = new Date();
       const repaymentDate = new Date(loanDate);
-      repaymentDate.setMonth(repaymentDate.getMonth() + 1); // Set repayment date to next month
+      repaymentDate.setMonth(repaymentDate.getMonth() + 1);
       const paymentStatus = "Not Paid";
       const paidDate = null;
 
