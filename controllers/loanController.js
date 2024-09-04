@@ -73,7 +73,7 @@ const processLoanApplication = async (req, res) => {
       "INSERT INTO loan (borrower_id, loan_amount, loan_date, repayment_date, payment_status, paid_date) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
       [borrowerId, loanAmount, loanDate, repaymentDate, paymentStatus, paidDate]
     );
-    // console.log(loanInsert.rows);
+
     await pool.query(
       "UPDATE credit_limit SET used_amount = used_amount + $1, remaining_amount = credit_limit - used_amount - $1 WHERE borrower_id = $2 RETURNING *",
       [loanAmount, borrowerId]
