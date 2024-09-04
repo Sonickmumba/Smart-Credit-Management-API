@@ -1,5 +1,5 @@
 const pool = require("../models/database");
-const calculatePenaltyAmount = require('../utils/calculatePenaltyAmount');
+const calculatePenaltyAmount = require("../utils/calculatePenaltyAmount");
 
 const processLoanApplication = async (req, res) => {
   const { borrowerId, loanAmount } = req.body;
@@ -224,7 +224,7 @@ const getPaymentDetails = async (req, res) => {
     const allLoans = await pool.query("SELECT * FROM loan WHERE id = $1", [
       loanId,
     ]);
-    // console.log(allLoans.rows);
+
     if (allLoans.rows.length === 0) {
       return res.status(404).json({
         success: false,
@@ -240,12 +240,32 @@ const getPaymentDetails = async (req, res) => {
     if (paymentdetails.rows.length === 0) {
       const insert = await pool.query(
         "INSERT INTO payment_transaction (loan_amout, loan_id, payment_status, repayment_date) VALUES ($1, $2, $3, $4) RETURNING *",
-        [allLoans.rows[0].loan_amount, allLoans.rows[0].id, allLoans.rows[0].payment_status, allLoans.rows[0], allLoans.rows[0].repayment_date]
+        [
+          allLoans.rows[0].loan_amount,
+          allLoans.rows[0].id,
+          allLoans.rows[0].payment_status,
+          allLoans.rows[0],
+          allLoans.rows[0].repayment_date,
+        ]
       );
     }
-    const penalty_amount = allLoans.rows[0].loan_amount * penaltyRate * daysOverdue;
-    console.log("Id not found. Soo we create a new entry")
-  } catch (error) {}
+    const loanAmount = paymentdetails.rows[0].loan_amount;
+    const repaymentDate = paymentdetails.rows[0].repayment_date;
+
+    const penaltyAmount = calculatePenaltyAmount(loanAmount, repaymentDate);
+    const totalAmount = penaltyAmount + loanAmount;
+    const transactionDetails = await pool.query(
+      "UPDATE payment_transaction SET penalty_amount = $1, total_amount = $2 WHERE loan_id = $3 RETURNING *",
+      [penaltyAmount, totalAmount, loanId]
+    );
+
+    res.status(200).send({ success: true, data: transactionDetails.rows})
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Internal server error",
+    });
+  }
 };
 
 exports.repayLoan = () => {};
