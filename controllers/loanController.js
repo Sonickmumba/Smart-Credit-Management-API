@@ -1,4 +1,5 @@
 const pool = require("../models/database");
+const calculatePenaltyAmount = require('../utils/calculatePenaltyAmount');
 
 const processLoanApplication = async (req, res) => {
   const { borrowerId, loanAmount } = req.body;
@@ -11,9 +12,8 @@ const processLoanApplication = async (req, res) => {
   }
 
   try {
-
     // Begin transaction
-    await pool.query('BEGIN');
+    await pool.query("BEGIN");
 
     const borrowerResults = await pool.query(
       "SELECT * FROM credit_limit WHERE borrower_id = $1",
@@ -33,7 +33,8 @@ const processLoanApplication = async (req, res) => {
     }
 
     const remainingCreditLimit =
-    creditLimitData.rows[0].credit_limit - creditLimitData.rows[0].used_amount;
+      creditLimitData.rows[0].credit_limit -
+      creditLimitData.rows[0].used_amount;
 
     // Check for unpaid loans
     const unpaidLoans = await pool.query(
@@ -42,19 +43,19 @@ const processLoanApplication = async (req, res) => {
     );
 
     if (unpaidLoans.rows.length > 0) {
-      await pool.query('ROLLBACK');
+      await pool.query("ROLLBACK");
       return res.status(400).json({
         Success: false,
         message:
-          "There are existing unpaid loans with crossed repayment dates."
+          "There are existing unpaid loans with crossed repayment dates.",
       });
     }
 
     if (loanAmount > remainingCreditLimit) {
-      await pool.query('ROLLBACK');
+      await pool.query("ROLLBACK");
       return res.status(400).json({
         Success: false,
-        message: "Loan amount exceeds the remaining credit limit."
+        message: "Loan amount exceeds the remaining credit limit.",
       });
     }
 
@@ -93,40 +94,37 @@ const processLoanApplication = async (req, res) => {
     );
 
     // Commit transaction
-    await pool.query('COMMIT');
+    await pool.query("COMMIT");
 
     return res.status(200).json(loanInsert.rows[0]);
   } catch (error) {
-    await pool.query('ROLLBACK');
+    await pool.query("ROLLBACK");
     res.status(500).json({
       success: false,
-      message: "An error occurred while processing the loan application"
+      message: "An error occurred while processing the loan application",
     });
   }
 };
 
 const viewAllLoans = async (req, res) => {
-
   try {
-    const allLoans = await pool.query('SELECT * FROM loan');
+    const allLoans = await pool.query("SELECT * FROM loan");
 
     if (allLoans.rows.length === 0) {
       return res.status(204).json({
         success: false,
-        message: 'No loans were found',
-        data: []
-      })
+        message: "No loans were found",
+        data: [],
+      });
     }
-    res.status(200).json({success: true, data: allLoans.rows});
-    
+    res.status(200).json({ success: true, data: allLoans.rows });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: 'Internal server error'
-    })
+      message: "Internal server error",
+    });
   }
 };
-
 
 const viewLoanById = async (req, res) => {
   const loanId = parseInt(req.params.loanId, 10);
@@ -134,25 +132,27 @@ const viewLoanById = async (req, res) => {
   if (isNaN(loanId)) {
     return res.status(400).json({
       success: false,
-      message: 'Invalid loan ID provided'
+      message: "Invalid loan ID provided",
     });
   }
 
   try {
-    const loanById = await pool.query('SELECT * FROM loan WHERE id = $1', [loanId]);
+    const loanById = await pool.query("SELECT * FROM loan WHERE id = $1", [
+      loanId,
+    ]);
 
     if (loanById.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Loan not found with provided ID'
-      })
+        message: "Loan not found with provided ID",
+      });
     }
-    return res.status(200).json({ success: true, data: loanById.rows[0]})
+    return res.status(200).json({ success: true, data: loanById.rows[0] });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: 'Internal server error'
-    })
+      message: "Internal server error",
+    });
   }
 };
 
@@ -160,52 +160,94 @@ const viewLoansByBorrowerId = async (req, res) => {
   const borrowerId = req.params.borrowerId;
 
   try {
-    const loansByBorrowerId = await pool.query('SELECT * FROM loan WHERE borrower_id = $1', [borrowerId]);
-    
+    const loansByBorrowerId = await pool.query(
+      "SELECT * FROM loan WHERE borrower_id = $1",
+      [borrowerId]
+    );
+
     if (loansByBorrowerId.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'No Loan found for the provided borrower ID.'
-      })
+        message: "No Loan found for the provided borrower ID.",
+      });
     }
     return res.status(200).json({
       success: true,
-      data: loansByBorrowerId.rows
-    })
+      data: loansByBorrowerId.rows,
+    });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: 'Internal server error'
-    })
+      message: "Internal server error",
+    });
   }
 };
-
 
 const viewCreditLimitByBorrowerId = async (req, res) => {
   const borrowerId = req.params.borrowerId;
 
   try {
-    const creditLimit = await pool.query('SELECT * FROM credit_limit WHERE borrower_id = $1', [borrowerId]);
-    
+    const creditLimit = await pool.query(
+      "SELECT * FROM credit_limit WHERE borrower_id = $1",
+      [borrowerId]
+    );
+
     if (creditLimit.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: `No credit limit data found for borrower ID: ${borrowerId}`
-      })
+        message: `No credit limit data found for borrower ID: ${borrowerId}`,
+      });
     }
     return res.status(200).json({
       success: true,
-      data: creditLimit.rows
-    })
+      data: creditLimit.rows,
+    });
   } catch (error) {
     return res.status(500).json({
       success: false,
-      message: 'Internal server error'
-    })
+      message: "Internal server error",
+    });
   }
 };
 
-exports.getPaymentDetails = () => {};
+const getPaymentDetails = async (req, res) => {
+  const loanId = parseInt(req.params.loanId, 10);
+  // console.log(loanId);
+  if (isNaN(loanId)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid loan ID provided",
+    });
+  }
+
+  try {
+    const allLoans = await pool.query("SELECT * FROM loan WHERE id = $1", [
+      loanId,
+    ]);
+    // console.log(allLoans.rows);
+    if (allLoans.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "loan was not found with the provided ID.",
+      });
+    }
+
+    const paymentdetails = await pool.query(
+      "SELECT * FROM payment_transaction WHERE loan_id = $1",
+      [loanId]
+    );
+
+    if (paymentdetails.rows.length === 0) {
+      const insert = await pool.query(
+        "INSERT INTO payment_transaction (loan_amout, loan_id, payment_status, repayment_date) VALUES ($1, $2, $3, $4) RETURNING *",
+        [allLoans.rows[0].loan_amount, allLoans.rows[0].id, allLoans.rows[0].payment_status, allLoans.rows[0], allLoans.rows[0].repayment_date]
+      );
+    }
+    const penalty_amount = allLoans.rows[0].loan_amount * penaltyRate * daysOverdue;
+    console.log("Id not found. Soo we create a new entry")
+  } catch (error) {}
+};
+
 exports.repayLoan = () => {};
 
 module.exports = {
@@ -214,4 +256,5 @@ module.exports = {
   viewLoanById,
   viewLoansByBorrowerId,
   viewCreditLimitByBorrowerId,
+  getPaymentDetails,
 };
