@@ -130,14 +130,20 @@ const viewAllLoans = async (req, res) => {
 
 const viewLoanById = async (req, res) => {
   const loanId = parseInt(req.params.loanId, 10);
-  console.log(loanId);
+
+  if (isNaN(loanId)) {
+    return res.status(400).json({
+      success: false,
+      message: 'Invalid loan ID provided'
+    });
+  }
 
   try {
     const loanById = await pool.query('SELECT * FROM loan WHERE id = $1', [loanId]);
     if (loanById.rows.length === 0) {
       return res.status(404).json({
         success: false,
-        message: 'Loan not foumd with provided ID'
+        message: 'Loan not found with provided ID'
       })
     }
     return res.status(200).json({ success: true, data: loanById.rows[0]})
