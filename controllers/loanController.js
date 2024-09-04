@@ -274,7 +274,33 @@ const getPaymentDetails = async (req, res) => {
   }
 };
 
-exports.repayLoan = () => {};
+repayLoan = (req, res) => {
+  const loanId = parseInt(req.params.loanId, 10);
+  const { repaymentAmount } = req.body;
+
+  // check if the payment transaction exists
+  const transaction = pool.query('SELECT FROM payment_transaction WHERE loan_id = $1', [loanId]);
+
+  if (transaction.rows.length === 0) {
+    return res.status(404).json({
+      success: false,
+      message: 'Loan ID is invalid'
+    })
+  };
+  // proceed to handle the repayment
+  if (transaction.rows[0].payment_status === 'Paid') {
+    return res.status(201).send({
+      message: 'Payment has already been made for this loan'
+    })
+  }
+
+  //Check if the repayment amount provided in the request matches the total amount in the "payment_transaction" table required for the loan. 
+  if (repaymentAmount !== transaction.rows[0].total_amount) {
+    return res.status(201).send({ message: 'Paymennt cannot be made as the full loan amount is required.'})
+  }
+
+
+};
 
 module.exports = {
   processLoanApplication,
@@ -283,4 +309,5 @@ module.exports = {
   viewLoansByBorrowerId,
   viewCreditLimitByBorrowerId,
   getPaymentDetails,
+  repayLoan,
 };
