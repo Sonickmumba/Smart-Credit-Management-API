@@ -128,7 +128,7 @@ const viewAllLoans = async (req, res) => {
 };
 
 
-exports.viewLoanById = () => {};
+const viewLoanById = () => {};
 exports.viewLoansByBorrowerId = () => {};
 exports.viewCreditLimitByBorrowerId = () => {};
 exports.getPaymentDetails = () => {};
@@ -137,4 +137,5 @@ exports.repayLoan = () => {};
 module.exports = {
   processLoanApplication,
   viewAllLoans,
+  viewLoanById,
 };
