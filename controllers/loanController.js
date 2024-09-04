@@ -20,12 +20,14 @@ const processLoanApplication = async (req, res) => {
   // }
 
   try {
-    const results = await pool.query(
+    const borrowerResults = await pool.query(
       "SELECT * FROM credit_limit WHERE borrower_id = $1",
       [borrowerId]
     );
 
-    if (results.rows.length === 0) {
+    let creditLimitData;
+
+    if (borrowerResults.rows.length === 0) {
       const baseCreditLimit = 5000.0;
       await pool.query(
         "INSERT INTO credit_limit (borrower_id, credit_limit, used_amount) VALUES ($1, $2, $3) RETURNING id",
