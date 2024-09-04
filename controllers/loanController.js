@@ -117,7 +117,6 @@ const viewAllLoans = async (req, res) => {
       })
     }
     res.status(200).json({success: true, data: allLoans.rows});
-    // console.log(allLoans.rows)
     
   } catch (error) {
     return res.status(500).json({
