@@ -35,7 +35,6 @@ const processLoanApplication = async (req, res) => {
         "INSERT INTO credit_limit (borrower_id, credit_limit, used_amount) VALUES ($1, $2, $3) RETURNING id",
         [borrowerId, baseCreditLimit, 0]
       );
-      // res.status(201).json({ Success: true, message: "New borrower added" });
     } else {
       creditLimitData = borrowerResults;
     }
