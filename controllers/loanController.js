@@ -104,7 +104,26 @@ const processLoanApplication = async (req, res) => {
     });
   }
 };
-exports.viewAllLoans = () => {};
+const viewAllLoans = async (req, res) => {
+
+  try {
+    const allLoans = await pool.query('SELECT * FROM loans');
+
+    if (allLoans.rows.length === 0) {
+      res.status(400).json({
+        success: false,
+        message: 'No loans were found'
+      })
+    }
+
+    console.log(allLoans.rows)
+    
+  } catch (error) {
+    
+  }
+};
+
+
 exports.viewLoanById = () => {};
 exports.viewLoansByBorrowerId = () => {};
 exports.viewCreditLimitByBorrowerId = () => {};
@@ -113,4 +132,5 @@ exports.repayLoan = () => {};
 
 module.exports = {
   processLoanApplication,
+  viewAllLoans,
 };
