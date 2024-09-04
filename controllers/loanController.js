@@ -232,10 +232,13 @@ const getPaymentDetails = async (req, res) => {
       });
     }
 
+    // Check for existing payment details
     const paymentdetails = await pool.query(
       "SELECT * FROM payment_transaction WHERE loan_id = $1",
       [loanId]
     );
+
+    // If no payment details exist, insert a new payment transaction
 
     if (paymentdetails.rows.length === 0) {
       const insert = await pool.query(
