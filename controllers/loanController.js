@@ -113,7 +113,8 @@ const viewAllLoans = async (req, res) => {
     if (allLoans.rows.length === 0) {
       return res.status(204).json({
         success: false,
-        message: 'No loans were found'
+        message: 'No loans were found',
+        data: []
       })
     }
     res.status(200).json({success: true, data: allLoans.rows});
