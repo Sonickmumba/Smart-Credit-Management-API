@@ -129,6 +129,7 @@ const viewAllLoans = async (req, res) => {
 
 
 const viewLoanById = () => {};
+
 exports.viewLoansByBorrowerId = () => {};
 exports.viewCreditLimitByBorrowerId = () => {};
 exports.getPaymentDetails = () => {};
