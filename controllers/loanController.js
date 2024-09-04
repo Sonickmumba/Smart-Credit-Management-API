@@ -158,7 +158,7 @@ const viewLoanById = async (req, res) => {
 
 const viewLoansByBorrowerId = async (req, res) => {
   const borrowerId = req.params.borrowerId;
-  console.log(borrowerId);
+
   try {
     const loansByBorrowerId = await pool.query('SELECT * FROM loan WHERE borrower_id = $1', [borrowerId]);
     
