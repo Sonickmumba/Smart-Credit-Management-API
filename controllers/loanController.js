@@ -104,22 +104,26 @@ const processLoanApplication = async (req, res) => {
     });
   }
 };
+
 const viewAllLoans = async (req, res) => {
 
   try {
     const allLoans = await pool.query('SELECT * FROM loan');
 
     if (allLoans.rows.length === 0) {
-      res.status(400).json({
+      return res.status(204).json({
         success: false,
         message: 'No loans were found'
       })
     }
-
-    console.log(allLoans.rows)
+    res.status(200).json({success: true, data: allLoans.rows});
+    // console.log(allLoans.rows)
     
   } catch (error) {
-    return error;
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    })
   }
 };
 
