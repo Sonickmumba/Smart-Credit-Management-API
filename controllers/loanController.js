@@ -212,7 +212,7 @@ const viewCreditLimitByBorrowerId = async (req, res) => {
 
 const getPaymentDetails = async (req, res) => {
   const loanId = parseInt(req.params.loanId, 10);
-  // console.log(loanId);
+
   if (isNaN(loanId)) {
     return res.status(400).json({
       success: false,
