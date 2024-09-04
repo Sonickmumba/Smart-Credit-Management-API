@@ -92,7 +92,7 @@ const processLoanApplication = async (req, res) => {
         ]
       );
 
-      return res.status(200).json(paymentTransactionInsert.rows[0]);
+      return res.status(200).json(loanInsert.rows[0]);
     }
   } catch (error) {
     res.status(500).json({
