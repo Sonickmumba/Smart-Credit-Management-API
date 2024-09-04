@@ -79,7 +79,7 @@ const processLoanApplication = async (req, res) => {
       const totalAmount = penaltyAmount + loanAmount;
       const paidOnDate = null;
 
-      const paymentTransactionInsert = await pool.query(
+      await pool.query(
         "INSERT INTO payment_transaction (loan_id, loan_amount, penalty_amount, total_amount, repayment_date, paid_on_date, payment_status) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
         [
           loanId,
