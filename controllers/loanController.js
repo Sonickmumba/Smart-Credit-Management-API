@@ -221,6 +221,7 @@ const getPaymentDetails = async (req, res) => {
   }
 
   try {
+      // Fetch the loan details by ID
     const allLoans = await pool.query("SELECT * FROM loan WHERE id = $1", [
       loanId,
     ]);
