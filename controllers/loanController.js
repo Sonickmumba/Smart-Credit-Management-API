@@ -221,7 +221,7 @@ const getPaymentDetails = async (req, res) => {
   }
 
   try {
-      // Fetch the loan details by ID
+    // Fetch the loan details by ID
     const allLoans = await pool.query("SELECT * FROM loan WHERE id = $1", [
       loanId,
     ]);
@@ -265,7 +265,7 @@ const getPaymentDetails = async (req, res) => {
       [penaltyAmount, totalAmount, loanId]
     );
 
-    res.status(200).send({ success: true, data: transactionDetails.rows})
+    res.status(200).send({ success: true, data: transactionDetails.rows });
   } catch (error) {
     return res.status(500).json({
       success: false,
@@ -274,32 +274,65 @@ const getPaymentDetails = async (req, res) => {
   }
 };
 
-repayLoan = (req, res) => {
+const repayLoan = async (req, res) => {
   const loanId = parseInt(req.params.loanId, 10);
-  const { repaymentAmount } = req.body;
+  const repaymentAmount = req.body;
 
-  // check if the payment transaction exists
-  const transaction = pool.query('SELECT FROM payment_transaction WHERE loan_id = $1', [loanId]);
+  try {
+    // check if the payment transaction exists
+    const transaction = await pool.query(
+      "SELECT FROM payment_transaction WHERE loan_id = $1",
+      [loanId]
+    );
 
-  if (transaction.rows.length === 0) {
-    return res.status(404).json({
+    if (transaction.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "Loan ID is invalid",
+      });
+    }
+    // proceed to handle the repayment
+    if (transaction.rows[0].payment_status === "Paid") {
+      return res.status(201).send({
+        message: "Payment has already been made for this loan",
+      });
+    }
+
+    //Check if the repayment amount provided in the request matches the total amount in the "payment_transaction" table required for the loan.
+    if (repaymentAmount !== transaction.rows[0].total_amount) {
+      return res.status(201).send({
+        message: "Paymennt cannot be made as the full loan amount is required.",
+      });
+    }
+
+    // proceed to update the payment transaction
+    const paymentStatus = "Paid";
+    const paymentDate = new Date();
+    const updatedPaymentTransaction = await pool.query(
+      "UPDATE payment_transaction SET payment_status = $1, payment_on_date = $2 WHERE loan_id = $2 RETURNING *",
+      [paymentStatus, paymentDate, loanId]
+    );
+
+    // update the loan status to PAID
+    const borrowerIdOfPaid = await pool.query(
+      "UPDATE loan SET payment_status = $1, paid_date = $2 WHERE loan_id = $3 RETURNING borrower_id",
+      [paymentStatus, paymentDate, loanId]
+    );
+    console.log(borrowerIdOfPaid);
+
+    // proceed to update the credit limit
+    await pool.query(
+      "UPDATE credit_limit SET used_amount = used_amount - $1, credit_limit = credit_limit + $2 WHERE borrower_id = $3",
+      [repaymentAmount, repaymentAmount, borrowerIdOfPaid]
+    );
+
+    res.status(200).json({ data: updatedPaymentTransaction.rows });
+  } catch (error) {
+    return res.status(500).json({
       success: false,
-      message: 'Loan ID is invalid'
-    })
-  };
-  // proceed to handle the repayment
-  if (transaction.rows[0].payment_status === 'Paid') {
-    return res.status(201).send({
-      message: 'Payment has already been made for this loan'
-    })
+      message: "Internal server error",
+    });
   }
-
-  //Check if the repayment amount provided in the request matches the total amount in the "payment_transaction" table required for the loan. 
-  if (repaymentAmount !== transaction.rows[0].total_amount) {
-    return res.status(201).send({ message: 'Paymennt cannot be made as the full loan amount is required.'})
-  }
-
-
 };
 
 module.exports = {
