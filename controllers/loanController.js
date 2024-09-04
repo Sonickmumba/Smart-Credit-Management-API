@@ -134,7 +134,7 @@ const viewLoanById = async (req, res) => {
 
   try {
     const loanById = await pool.query('SELECT * FROM loan WHERE id = $1', [loanId]);
-    if (!loanById) {
+    if (loanById.rows.length === 0) {
       return res.status(404).json({
         success: false,
         message: 'Loan not foumd with provided ID'
