@@ -140,7 +140,7 @@ const viewLoanById = async (req, res) => {
 
   try {
     const loanById = await pool.query('SELECT * FROM loan WHERE id = $1', [loanId]);
-    
+
     if (loanById.rows.length === 0) {
       return res.status(404).json({
         success: false,
@@ -156,7 +156,31 @@ const viewLoanById = async (req, res) => {
   }
 };
 
-exports.viewLoansByBorrowerId = () => {};
+const viewLoansByBorrowerId = async (req, res) => {
+  const borrowerId = req.params.borrowerId;
+  console.log(borrowerId);
+  try {
+    const loansByBorrowerId = await pool.query('SELECT * FROM loan WHERE borrower_id = $1', [borrowerId]);
+    
+    if (loansByBorrowerId.rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: 'No Loan found for the provided borrower ID.'
+      })
+    }
+    return res.status(200).json({
+      success: true,
+      data: loansByBorrowerId.rows
+    })
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Internal server error'
+    })
+  }
+};
+
+
 exports.viewCreditLimitByBorrowerId = () => {};
 exports.getPaymentDetails = () => {};
 exports.repayLoan = () => {};
@@ -165,4 +189,5 @@ module.exports = {
   processLoanApplication,
   viewAllLoans,
   viewLoanById,
+  viewLoansByBorrowerId,
 };
