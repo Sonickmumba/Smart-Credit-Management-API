@@ -54,7 +54,7 @@ const processLoanApplication = async (req, res) => {
       const loanDate = new Date();
       const repaymentDate = new Date(loanDate);
       repaymentDate.setMonth(repaymentDate.getMonth() + 1); // Set repayment date to next month
-      const paymentStatus = "Not paid";
+      const paymentStatus = "Not Paid";
       const paidDate = null;
 
       const loanInsert = await pool.query(
@@ -68,7 +68,7 @@ const processLoanApplication = async (req, res) => {
           paidDate
         ]
       );
-      console.log(loanInsert.rows);
+      // console.log(loanInsert.rows);
       await pool.query(
         "UPDATE credit_limit SET used_amount = used_amount + $1, remaining_amount = credit_limit - used_amount - $1 WHERE borrower_id = $2 RETURNING *",
         [loanAmount, borrowerId]
