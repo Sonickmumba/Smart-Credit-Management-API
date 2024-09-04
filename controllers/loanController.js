@@ -244,7 +244,6 @@ const getPaymentDetails = async (req, res) => {
           allLoans.rows[0].loan_amount,
           allLoans.rows[0].id,
           allLoans.rows[0].payment_status,
-          allLoans.rows[0],
           allLoans.rows[0].repayment_date,
         ]
       );
