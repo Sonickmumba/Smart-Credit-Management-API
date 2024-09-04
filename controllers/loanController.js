@@ -22,6 +22,10 @@ const processLoanApplication = async (req, res) => {
   // }
 
   try {
+
+    // Begin transaction
+    await pool.query('BEGIN');
+
     const borrowerResults = await pool.query(
       "SELECT * FROM credit_limit WHERE borrower_id = $1",
       [borrowerId]
@@ -49,6 +53,7 @@ const processLoanApplication = async (req, res) => {
     );
 
     if (unpaidLoans.rows.length > 0) {
+      await pool.query('ROLLBACK');
       return res.status(400).json({
         Success: false,
         message:
@@ -57,6 +62,7 @@ const processLoanApplication = async (req, res) => {
     }
 
     if (loanAmount > remainingCreditLimit) {
+      await pool.query('ROLLBACK');
       return res.status(400).json({
         Success: false,
         message: "Loan amount exceeds the remaining credit limit."
@@ -97,8 +103,12 @@ const processLoanApplication = async (req, res) => {
       ]
     );
 
+    // Commit transaction
+    await pool.query('COMMIT');
+
     return res.status(200).json(loanInsert.rows[0]);
   } catch (error) {
+    await pool.query('ROLLBACK');
     res.status(500).json({
       success: false,
       message: "An error occurred while processing the loan application"
