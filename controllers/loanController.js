@@ -41,7 +41,7 @@ const processLoanApplication = async (req, res) => {
     }
 
     const remainingCreditLimit =
-      results.rows[0].credit_limit - results.rows[0].used_amount;
+    creditLimitData.rows[0].credit_limit - creditLimitData.rows[0].used_amount;
 
     // Check for unpaid loans
     const unpaidLoans = await pool.query(
