@@ -3,16 +3,21 @@ const pool = require("../models/database");
 const processLoanApplication = async (req, res) => {
   const { borrowerId, loanAmount } = req.body;
 
-  if (!borrowerId || borrowerId === "") {
-    return res
-      .status(400)
-      .json({ Success: false, message: "Invalid or Missing input" });
+  // Input validation
+  if (!borrowerId || borrowerId === '' || !loanAmount || loanAmount <= 0) {
+    return res.status(400).json({ success: false, message: "Invalid or Missing input" });
   }
-  if (loanAmount === undefined || loanAmount <= 0) {
-    return res
-      .status(400)
-      .json({ Success: false, message: "Invalid or Missing input" });
-  }
+
+  // if (!borrowerId || borrowerId === "") {
+  //   return res
+  //     .status(400)
+  //     .json({ Success: false, message: "Invalid or Missing input" });
+  // }
+  // if (loanAmount === undefined || loanAmount <= 0) {
+  //   return res
+  //     .status(400)
+  //     .json({ Success: false, message: "Invalid or Missing input" });
+  // }
 
   try {
     const results = await pool.query(
