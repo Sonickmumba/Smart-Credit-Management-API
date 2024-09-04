@@ -254,8 +254,11 @@ const getPaymentDetails = async (req, res) => {
     const loanAmount = paymentdetails.rows[0].loan_amount;
     const repaymentDate = paymentdetails.rows[0].repayment_date;
 
+    // Calculate the penalty amount if overdue
     const penaltyAmount = calculatePenaltyAmount(loanAmount, repaymentDate);
     const totalAmount = penaltyAmount + loanAmount;
+
+    // Update the payment transaction with penalty and total amounts
     const transactionDetails = await pool.query(
       "UPDATE payment_transaction SET penalty_amount = $1, total_amount = $2 WHERE loan_id = $3 RETURNING *",
       [penaltyAmount, totalAmount, loanId]
