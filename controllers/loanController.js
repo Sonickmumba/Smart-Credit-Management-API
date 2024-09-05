@@ -317,8 +317,6 @@ const repayLoan = async (req, res) => {
       [paymentStatus, paymentDate, loanId]
     );
 
-   
-
     // update the loan status to PAID
 
     const borrowerIdOfPaid = await pool.query(
