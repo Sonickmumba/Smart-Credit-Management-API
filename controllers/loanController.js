@@ -284,7 +284,6 @@ const repayLoan = async (req, res) => {
       "SELECT * FROM payment_transaction WHERE loan_id = $1",
       [loanId]
     );
-    console.log(transaction.rows)
 
     if (transaction.rows.length === 0) {
       return res.status(404).json({
