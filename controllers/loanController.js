@@ -326,7 +326,7 @@ const repayLoan = async (req, res) => {
       [paymentStatus, paymentDate, loanId]
     );
 
-    console.log('Update Result:', borrowerIdOfPaid);
+    console.log('Update Result:', borrowerIdOfPaid.rows[0].borrower_id);
     console.log('we are hear now')
 
     // proceed to update the credit limit
@@ -335,7 +335,7 @@ const repayLoan = async (req, res) => {
       "UPDATE credit_limit SET used_amount = used_amount - $1, credit_limit = credit_limit + $2 WHERE borrower_id = $3",
       [repaymentAmount, repaymentAmount, borrowerId]
     );
-
+    console.log('It passed here')
     res.status(200).json({ data: updatedPaymentTransaction.rows });
 
   } catch (error) {
