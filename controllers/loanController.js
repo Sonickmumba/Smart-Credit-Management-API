@@ -278,8 +278,6 @@ const repayLoan = async (req, res) => {
   const loanId = parseInt(req.params.loanId, 10);
   const { loan_amount: repaymentAmount } = req.body;
 
-  // console.log(loanId)
-  // console.log(repaymentAmount.loan_amount)
 
 
   try {
