@@ -276,14 +276,19 @@ const getPaymentDetails = async (req, res) => {
 
 const repayLoan = async (req, res) => {
   const loanId = parseInt(req.params.loanId, 10);
-  const repaymentAmount = req.body;
+  const { loan_amount: repaymentAmount } = req.body;
+
+  // console.log(loanId)
+  // console.log(repaymentAmount.loan_amount)
+
 
   try {
     // check if the payment transaction exists
     const transaction = await pool.query(
-      "SELECT FROM payment_transaction WHERE loan_id = $1",
+      "SELECT * FROM payment_transaction WHERE loan_id = $1",
       [loanId]
     );
+    console.log(transaction.rows)
 
     if (transaction.rows.length === 0) {
       return res.status(404).json({
@@ -299,9 +304,10 @@ const repayLoan = async (req, res) => {
     }
 
     //Check if the repayment amount provided in the request matches the total amount in the "payment_transaction" table required for the loan.
-    if (repaymentAmount !== transaction.rows[0].total_amount) {
+    // console.log(transaction.rows[0].total_amount)
+    if (repaymentAmount.loan_amount !== transaction.rows[0].total_amount) {
       return res.status(201).send({
-        message: "Paymennt cannot be made as the full loan amount is required.",
+        message: "Payment cannot be made as the full loan amount is required.",
       });
     }
 
@@ -309,7 +315,7 @@ const repayLoan = async (req, res) => {
     const paymentStatus = "Paid";
     const paymentDate = new Date();
     const updatedPaymentTransaction = await pool.query(
-      "UPDATE payment_transaction SET payment_status = $1, payment_on_date = $2 WHERE loan_id = $2 RETURNING *",
+      "UPDATE payment_transaction SET payment_status = $1, payment_on_date = $2 WHERE loan_id = $3 RETURNING *",
       [paymentStatus, paymentDate, loanId]
     );
 
@@ -321,9 +327,10 @@ const repayLoan = async (req, res) => {
     console.log(borrowerIdOfPaid);
 
     // proceed to update the credit limit
+    const borrowerId = borrowerIdOfPaid.rows[0].borrower_id;
     await pool.query(
       "UPDATE credit_limit SET used_amount = used_amount - $1, credit_limit = credit_limit + $2 WHERE borrower_id = $3",
-      [repaymentAmount, repaymentAmount, borrowerIdOfPaid]
+      [repaymentAmount, repaymentAmount, borrowerId]
     );
 
     res.status(200).json({ data: updatedPaymentTransaction.rows });
