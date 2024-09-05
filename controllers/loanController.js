@@ -304,8 +304,7 @@ const repayLoan = async (req, res) => {
     }
 
     //Check if the repayment amount provided in the request matches the total amount in the "payment_transaction" table required for the loan.
-    // console.log(transaction.rows[0].total_amount)
-    if (repaymentAmount.loan_amount !== transaction.rows[0].total_amount) {
+    if (repaymentAmount !== transaction.rows[0].total_amount) {
       return res.status(201).send({
         message: "Payment cannot be made as the full loan amount is required.",
       });
@@ -324,7 +323,6 @@ const repayLoan = async (req, res) => {
       "UPDATE loan SET payment_status = $1, paid_date = $2 WHERE loan_id = $3 RETURNING borrower_id",
       [paymentStatus, paymentDate, loanId]
     );
-    console.log(borrowerIdOfPaid);
 
     // proceed to update the credit limit
     const borrowerId = borrowerIdOfPaid.rows[0].borrower_id;
