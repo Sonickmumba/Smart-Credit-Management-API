@@ -278,8 +278,6 @@ const repayLoan = async (req, res) => {
   const loanId = parseInt(req.params.loanId, 10);
   const { loan_amount: repaymentAmount } = req.body;
 
-
-
   try {
     // check if the payment transaction exists
     const transaction = await pool.query(
