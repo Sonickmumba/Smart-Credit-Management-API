@@ -326,8 +326,6 @@ const repayLoan = async (req, res) => {
       [paymentStatus, paymentDate, loanId]
     );
 
-    console.log('Update Result:', borrowerIdOfPaid.rows[0].borrower_id);
-    console.log('we are hear now')
 
     // proceed to update the credit limit
     const borrowerId = borrowerIdOfPaid.rows[0].borrower_id;
