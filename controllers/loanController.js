@@ -276,7 +276,7 @@ const getPaymentDetails = async (req, res) => {
 
 const repayLoan = async (req, res) => {
   const loanId = parseInt(req.params.loanId, 10);
-  const { loan_amount: repaymentAmount } = req.body;
+  const { repayment_amount: repaymentAmount } = req.body;
 
   try {
     // check if the payment transaction exists
@@ -291,6 +291,7 @@ const repayLoan = async (req, res) => {
         message: "Loan ID is invalid",
       });
     }
+  
     // proceed to handle the repayment
     if (transaction.rows[0].payment_status === "Paid") {
       return res.status(201).send({
@@ -299,25 +300,34 @@ const repayLoan = async (req, res) => {
     }
 
     //Check if the repayment amount provided in the request matches the total amount in the "payment_transaction" table required for the loan.
+
     if (repaymentAmount !== transaction.rows[0].total_amount) {
       return res.status(201).send({
-        message: "Payment cannot be made as the full loan amount is required.",
+        message: "Payment cannot be made as the full loan amount is required."
       });
     }
-
     // proceed to update the payment transaction
+
     const paymentStatus = "Paid";
     const paymentDate = new Date();
+
+
     const updatedPaymentTransaction = await pool.query(
-      "UPDATE payment_transaction SET payment_status = $1, payment_on_date = $2 WHERE loan_id = $3 RETURNING *",
+      "UPDATE payment_transaction SET payment_status = $1, paid_on_date = $2 WHERE loan_id = $3 RETURNING *",
       [paymentStatus, paymentDate, loanId]
     );
 
+   
+
     // update the loan status to PAID
+
     const borrowerIdOfPaid = await pool.query(
-      "UPDATE loan SET payment_status = $1, paid_date = $2 WHERE loan_id = $3 RETURNING borrower_id",
+      "UPDATE loan SET payment_status = $1, paid_date = $2 WHERE id = $3 RETURNING borrower_id",
       [paymentStatus, paymentDate, loanId]
     );
+
+    console.log('Update Result:', borrowerIdOfPaid);
+    console.log('we are hear now')
 
     // proceed to update the credit limit
     const borrowerId = borrowerIdOfPaid.rows[0].borrower_id;
@@ -327,6 +337,7 @@ const repayLoan = async (req, res) => {
     );
 
     res.status(200).json({ data: updatedPaymentTransaction.rows });
+
   } catch (error) {
     return res.status(500).json({
       success: false,
