@@ -7,7 +7,7 @@ const calculatePenaltyAmount = (loanAmount, repaymentDate) => {
 
   // Calculate the difference in time and convert to days
   const timeDifference = currentDate - repaymentDateObj;
-  const daysOverdue = Math.max(Math.floor(timeDifference / (1000 * 60 * 60 * 24)), 0); // Ensure days
+  const daysOverdue = Math.max(Math.floor(timeDifference / (1000 * 60 * 60 * 24)), 0); // Ensure d
 
   return loanAmount * penaltyRate * daysOverdue;
 }
