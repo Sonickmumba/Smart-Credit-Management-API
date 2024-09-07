@@ -13,7 +13,9 @@ router.get('/borrowers/:borrowerId', loanController.viewLoansByBorrowerId);
 router.get('/creditlimit/:borrowerId', loanController.viewCreditLimitByBorrowerId);
 
 router.get('/paymentdetails/:loanId', loanController.getPaymentDetails);
+
 router.post('/process', loanController.processLoanApplication);
+
 router.post('/paymentdetails/:loanId/repayment', loanController.repayLoan);
 
 
